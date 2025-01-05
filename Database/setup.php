@@ -1,11 +1,5 @@
 <?php
 
-spl_autoload_extensions('.php');
-spl_autoload_register(function($class) {
-  include __DIR__ . '/'  . $class . '.php';
-});
-
-
 use Database\MySQLWrapper;
 
 $mysqli = new MySQLWrapper();
