@@ -1,7 +1,10 @@
 <?php
 
-spl_autoload_extensions(".php");
-spl_autoload_register();
+spl_autoload_extensions('.php');
+spl_autoload_register(function($class) {
+  $class = str_replace('\\', '/', $class);
+  include(__DIR__ . '/'  . $class . '.php');
+});
 
 use Database\MySQLWrapper;
 
