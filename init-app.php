@@ -3,27 +3,29 @@
 spl_autoload_extensions(".php");
 spl_autoload_register();
 
-use Helpers\Settings;
-/*
-    接続の失敗時にエラーを報告し、例外をスローします。データベース接続を初期化する前にこの設定を行ってください。
-    テストするには、.env設定で誤った情報を入力します。
-*/
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+use Database\MySQLWrapper;
 
-/*
- * https://www.php.net/manual/en/class.mysqli.php で利用可能なすべてのメソッドを確認できます。
- */
-$mysqli = new mysqli('localhost', Settings::env('DATABASE_USER'), Settings::env('DATABASE_USER_PASSWORD'), Settings::env('DATABASE_NAME'));
+// getoptはCLIで渡された指定された引数のオプションです。値のペアの配列を返します。
+// 値が渡されない場合 (例：--myArg=123、値は123) は、値はfalseになります。issetを使用してそれが存在するかどうかをチェックします。
+// short_optionsは、短いオプションの文字の配列を表す文字列を取り入れます。例えばabcは -a -b -c のオプションをチェックします。ロングオプションはオプションの完全な名前です。
+$opts = getopt('',['migrate']);
+if(isset($opts['migrate'])){
+    printf('Database migration enabled.');
+    // includeはPHPファイルをインクルードして実行します
+    include('Database/setup.php');
+    printf('Database migration ended.');
+}
 
-// https://www.php.net/manual/en/mysqli.get-charset.php
+$mysqli = new MySQLWrapper();
+
 $charset = $mysqli->get_charset();
 
 if($charset === null) throw new Exception('Charset could be read');
 
-// データベースの文字セット、照合順序、統計情報について取得します。
+// データベースの文字セット、照合順序、および統計に関する情報を取得します。
 printf(
     "%s's charset: %s.%s",
-    Settings::env('DATABASE_NAME'),
+    $mysqli->getDatabaseName(),
     $charset->charset,
     PHP_EOL
 );
@@ -34,5 +36,5 @@ printf(
     PHP_EOL
 );
 
-// 接続を閉じるには、closeメソッドを使用します。
+// 接続を閉じるには、closeメソッドが使用されます。
 $mysqli->close();
