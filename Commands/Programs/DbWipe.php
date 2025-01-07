@@ -5,6 +5,8 @@ namespace Commands\Programs;
 use Commands\AbstractCommand;
 use Commands\Argument;
 use Database\MySQLWrapper;
+use Helpers\Settings;
+
 use Exception;
 
 class DbWipe extends AbstractCommand 
@@ -30,7 +32,7 @@ class DbWipe extends AbstractCommand
     else {
       // バックアップを作成してから、データベースをクリアにする
       $this->generateBackupFile();
-      $this->cleanupToDatabase();
+      // $this->cleanupToDatabase();
     }
 
     return 0;
@@ -64,6 +66,25 @@ class DbWipe extends AbstractCommand
 
   private function generateBackupFile(): void {
     $this->log('Creating backup file....');
-    $this->log('Successfully backup file.');
+
+    $username = $username??Settings::env('DATABASE_USER');
+    $password = $password??Settings::env('DATABASE_USER_PASSWORD');
+    $database = $database??Settings::env('DATABASE_NAME');
+
+    $backupDir = dirname(__DIR__, 2) . "/Database/Backups/";
+    $backupFile = $backupDir . "backup_" . date("Y-m-d_H-i-s") . ".sql";
+
+    if (!is_dir($backupDir)) {
+      mkdir($backupDir, 0755, true);
+    }
+  
+    $command = "mysqldump -u {$username} -p{$password} {$database} > {$backupFile}";
+    exec($command, $output, $returnVar);
+  
+    if ($returnVar === 0) {
+      $this->log('Create backup file Successfully.');
+    } else {
+      throw new Exception("Could not create backup file.");
+    }
   }
 }
