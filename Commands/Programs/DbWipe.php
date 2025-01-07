@@ -22,9 +22,9 @@ class DbWipe extends AbstractCommand
 
   public function execute(): int
   {
-    $rollback = $this->getArgumentValue('backup');
+    $backup = $this->getArgumentValue('backup');
     $this->log('Starging DbWipe.....');
-    if($rollback === false){
+    if($backup === false){
       $this->cleanupToDatabase();
     }
     else {
