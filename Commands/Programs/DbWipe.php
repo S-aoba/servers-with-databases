@@ -16,26 +16,55 @@ class DbWipe extends AbstractCommand
 
   public static function getArguments(): array
   {
-    // バックアップを作成するオプションを追加する
     return [
-      (new Argument('backup'))->description('Create backup file, before cleanup to database.')->required(false)->allowAsShort(true)
+      (new Argument('backup'))->description('Create backup file, before cleanup to database.')->required(false)->allowAsShort(true),
+      (new Argument('reconstruction'))->description('Reconstruction to database to using backup file.')->required(false)->allowAsShort(true)
     ];
   }
 
   public function execute(): int
   {
     $backup = $this->getArgumentValue('backup');
+    $reconstruction = $this->getArgumentValue('reconstruction');
+    
     $this->log('Starging DbWipe.....');
-    if($backup === false){
-      $this->cleanupToDatabase();
-    }
-    else {
+    
+    if($backup) {
       // バックアップを作成してから、データベースをクリアにする
       $this->generateBackupFile();
       $this->cleanupToDatabase();
     }
 
+    else if ($reconstruction){
+      $this->reconstructionDatabase();
+    }
+    
+    else {
+      $this->cleanupToDatabase();
+    }
+
     return 0;
+  }
+
+  private function reconstructionDatabase(): void {
+    $filePath = dirname(__DIR__, 2) . "/Database/Backup/backup.sql";
+    $isExistBackupFile = file_exists($filePath);
+
+    if($isExistBackupFile === false) throw new Exception("Do not exists backup file.");
+    else {
+      $username = $username??Settings::env('DATABASE_USER');
+      $database = $database??Settings::env('DATABASE_NAME');
+
+      $command = "mysql -u {$username} -p {$database} < {$filePath}";
+      exec($command, $output, $returnVar);
+      
+      if($returnVar === 0) {
+        $this->log("Successfully restored.");
+      }
+      else {
+        throw new Exception("Could not restored.");
+      }
+    }
   }
 
   private function cleanupToDatabase(): void {
@@ -71,8 +100,8 @@ class DbWipe extends AbstractCommand
     $password = $password??Settings::env('DATABASE_USER_PASSWORD');
     $database = $database??Settings::env('DATABASE_NAME');
 
-    $backupDir = dirname(__DIR__, 2) . "/Database/Backups/";
-    $backupFile = $backupDir . "backup_" . date("Y-m-d_H-i-s") . ".sql";
+    $backupDir = dirname(__DIR__, 2) . "/Database/Backup/";
+    $backupFile = $backupDir . "backup" . ".sql";
 
     if (!is_dir($backupDir)) {
       mkdir($backupDir, 0755, true);
