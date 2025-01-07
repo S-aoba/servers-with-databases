@@ -32,7 +32,7 @@ class DbWipe extends AbstractCommand
     else {
       // バックアップを作成してから、データベースをクリアにする
       $this->generateBackupFile();
-      // $this->cleanupToDatabase();
+      $this->cleanupToDatabase();
     }
 
     return 0;
