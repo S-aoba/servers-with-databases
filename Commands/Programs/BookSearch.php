@@ -5,8 +5,8 @@ namespace Commands\Programs;
 use Commands\AbstractCommand;
 use Commands\Argument;
 use Database\MySQLWrapper;
+use DateTime;
 use Exception;
-use JsonException;
 
 class BookSearch extends AbstractCommand {
 
@@ -31,6 +31,20 @@ class BookSearch extends AbstractCommand {
     
     if(count($cahedBookData) > 0) {
       // キャッシュデータの保存期間が30日を超えていたら、新しいデータを取得して保存する
+      $this->log("Cache Book Data exists.");
+      $isOver30Date = $this->calculationDiffDate($cahedBookData);
+
+      if($isOver30Date) {
+        $this->log("Cache Book Data is over 30 Date. So fetch the new Book Data.");
+        $bookData = $this->fetchBookData($isbn);      
+        $this->deleteCahceData($isbn);
+        $this->saveBookDataToDB($bookData, $isbn);
+
+        // $this->printBookData($bookData);
+
+        return 0;
+      }
+      $this->log("Show you Cache Book Data.");
       // $this->printBookData($cahedBookData);
     }
     else {
@@ -43,12 +57,23 @@ class BookSearch extends AbstractCommand {
     return 0;
   }
 
+  private function calculationDiffDate(array $cachedBookData) : bool {
+    $currentDate = new DateTime('Asia/tokyo');
+    $chachedDate = new DateTime($cachedBookData[0]['created_at']);
+
+    $diff = $currentDate->diff($chachedDate);
+    $daysDifference = $diff->days;
+    if($daysDifference < 30) return false;
+
+    return true;
+  }
+
   private function fetchBookData(string $isbn): array{
     $url = "https://openlibrary.org/api/books?bibkeys=ISBN:{$isbn}&format=json&jscmd=data";
 
     $result = file_get_contents($url);
     $data = json_decode($result, true);
-    if(empty($data)) throw new Exception("{$isbn} is not exists. Please input another isbn.");
+    if(empty($data)) throw new Exception("{$isbn} do not exists. Please input another isbn.");
 
     $book = $data["ISBN:{$isbn}"];
     // Titile, Authors, Publishers ,Publish Date のみを抽出してDBへ保存する
@@ -89,8 +114,17 @@ class BookSearch extends AbstractCommand {
     return $result;
   }
 
-  private function updateCahceData(): bool {
-    return true;
+  private function deleteCahceData(string $isbn): void {
+    $this->log("Starting delete old cache book data.");
+    
+    $mysql = new MySQLWrapper();
+    $id = "book-search-isbn-{$isbn}";
+    // 既存のキャシュを削除する
+    $command = "DELETE FROM book_searchs WHERE id = '{$id}'";
+    $result = $mysql->query($command);
+    if($result === false) throw new Exception("Could not delete cache book data.");
+
+    $this->log("Delete old cache book data successfully.");
   }
 
   private function printBookData(array $bookData): void {
