@@ -39,19 +39,19 @@ class BookSearch extends AbstractCommand {
         $bookData = $this->fetchBookData($isbn);      
         $this->deleteCahceData($isbn);
         $this->saveBookDataToDB($bookData, $isbn);
-
-        // $this->printBookData($bookData);
+        $this->printBookData($bookData);
 
         return 0;
       }
       $this->log("Show you Cache Book Data.");
-      // $this->printBookData($cahedBookData);
+      $this->printBookData($cahedBookData[0]);
+      
     }
     else {
       // Open Library APIからBook Dataを取得する
       $bookData = $this->fetchBookData($isbn);
       $this->saveBookDataToDB($bookData, $isbn);
-      // $this->printBookData($bookData);
+      $this->printBookData($bookData);
     }
 
     return 0;
@@ -116,7 +116,7 @@ class BookSearch extends AbstractCommand {
 
   private function deleteCahceData(string $isbn): void {
     $this->log("Starting delete old cache book data.");
-    
+
     $mysql = new MySQLWrapper();
     $id = "book-search-isbn-{$isbn}";
     // 既存のキャシュを削除する
@@ -128,6 +128,7 @@ class BookSearch extends AbstractCommand {
   }
 
   private function printBookData(array $bookData): void {
-
+    // TODO: コンソール表示を見やすくしたい
+    print_r($bookData);
   }
 }
