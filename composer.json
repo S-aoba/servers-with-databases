@@ -1,4 +1,16 @@
 {
+    "autoload": {
+        "psr-4": {
+            "Exeptions\\": "Exeptions/",
+            "Helpers\\": "Helpers/",
+            "Commands\\": "Commands/",
+            "Commands\\Programs\\": "Commands/Programs/",
+            "Database\\": "Database/",
+            "Database\\Examples\\": "Database/Examples/",
+            "Database\\Migrations\\": "Database/Migrations/",
+            "Database\\Seeds\\": "Database/Seeds/"
+        }
+    },
     "require": {
         "fakerphp/faker": "^1.24"
     }
