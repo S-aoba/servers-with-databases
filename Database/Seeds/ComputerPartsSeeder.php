@@ -67,7 +67,7 @@ class ComputerPartsSeeder extends AbstractSeeder {
 
     public function createRowData(): array {
         $data = [];
-        $count = 1;
+        $count = 1000;
 
         for($i = 0; $i < $count; $i++) {
             $row = $this->generateRowData();
