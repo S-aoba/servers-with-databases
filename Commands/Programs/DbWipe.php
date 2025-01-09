@@ -80,8 +80,8 @@ class DbWipe extends AbstractCommand
       $rows = $result->fetch_all();
       foreach($rows as $row) {
           $table = $row[0];
-          $truncateSql = "TRUNCATE TABLE `$table`";
-          $result = $mysql->query($truncateSql);
+          $deleteTableSql = "DROP TABLE `$table`";
+          $result = $mysql->query($deleteTableSql);
           if($result === false) throw new Exception("Could not execute query.");
       }
     
