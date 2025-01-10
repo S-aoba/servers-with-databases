@@ -1,6 +1,7 @@
 <?php
 namespace Database\Seeds;
 
+use Carbon\Carbon;
 use Database\AbstractSeeder;
 use Faker\Factory;
 
@@ -46,6 +47,14 @@ class CarsSeeder extends AbstractSeeder {
         [
             'data_type' => 'string',
             'column_name' => 'status'
+        ],
+        [
+            'data_type' => 'Carbon\Carbon',
+            'column_name' => 'created_at'
+        ],
+        [
+            'data_type' => 'Carbon\Carbon',
+            'column_name' => 'updated_at'
         ]
     ];
     
@@ -66,6 +75,9 @@ class CarsSeeder extends AbstractSeeder {
     private function generateRowData(): array {
         $faker = Factory::create();
 
+        $created_at = Carbon::now('Asia/Tokyo');
+        $updated_at = Carbon::now('Asia/Tokyo');
+
         $output = [
              $faker->company,
              $faker->word,
@@ -75,7 +87,9 @@ class CarsSeeder extends AbstractSeeder {
              $faker->randomFloat(1, 0, 200000),
              $faker->randomElement(['Automatic', 'Manual']),
              $faker->randomElement(['V6', 'V8', 'Electric', 'Hybrid']),
-             $faker->randomElement(['Available', 'Sold'])
+             $faker->randomElement(['Available', 'Sold']),
+             $created_at,
+             $updated_at
         ];
 
         return $output;
