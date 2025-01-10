@@ -75,8 +75,8 @@ class CarsSeeder extends AbstractSeeder {
     private function generateRowData(): array {
         $faker = Factory::create();
 
-        $created_at = Carbon::now('Asia/Tokyo');
-        $updated_at = Carbon::now('Asia/Tokyo');
+        $created_at = $this->dateTime();
+        $updated_at = $this->dateTime();
 
         $output = [
              $faker->company,
@@ -93,5 +93,16 @@ class CarsSeeder extends AbstractSeeder {
         ];
 
         return $output;
+    }
+
+    private function dateTime() : Carbon {
+        $start = Carbon::create(2000, 1, 1)->timestamp;
+        $end = Carbon::create(2025, 12, 31)->timestamp;
+
+        $randomTimeStamp = mt_rand($start, $end);
+
+        $randomDate = Carbon::createFromTimestamp($randomTimeStamp);
+
+        return $randomDate;
     }
 }       

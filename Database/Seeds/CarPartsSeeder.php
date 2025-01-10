@@ -46,7 +46,7 @@ class CarPartsSeeder extends AbstractSeeder {
     {
         // TODO: createRowData()メソッドを実装してください。
         $data = [];
-        $count = 1000;
+        $count = 10000;
 
         for($i = 0; $i < $count; $i++) {
             $row = $this->generateRowData();
@@ -58,8 +58,8 @@ class CarPartsSeeder extends AbstractSeeder {
     private function generateRowData(): array {
         $faker = Factory::create();
 
-        $created_at = Carbon::now('Asia/Tokyo');
-        $updated_at = Carbon::now('Asia/Tokyo');
+        $created_at = $this->dateTime();
+        $updated_at = $this->dateTime();
 
         $output = [
             $faker->word,
@@ -72,5 +72,16 @@ class CarPartsSeeder extends AbstractSeeder {
         ];
 
         return $output;
+    }
+
+    private function dateTime() : Carbon {
+        $start = Carbon::create(2000, 1, 1)->timestamp;
+        $end = Carbon::create(2025, 12, 31)->timestamp;
+
+        $randomTimeStamp = mt_rand($start, $end);
+
+        $randomDate = Carbon::createFromTimestamp($randomTimeStamp);
+
+        return $randomDate;
     }
 }       
