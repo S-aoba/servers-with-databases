@@ -12,7 +12,7 @@ class CreateCarPartTable1 implements SchemaMigration
             "CREATE TABLE IF NOT EXISTS car_parts (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 name VARCHAR(50) NOT NULL,
-                description VARCHAR(50),
+                description VARCHAR(255),
                 price FLOAT,
                 quantity_in_stock INT,
                 car_id INT NOT NUll,
