@@ -81,7 +81,7 @@ class ComputerPartsSeeder extends AbstractSeeder {
 
         $output = [
              $faker->words(3, true), 
-             $faker->randomElement(['Type1', 'Type2', 'Type3']), 
+             $faker->randomElement(['cpu', 'gpu', 'motherboard', 'power', 'memory', 'ssd', 'hd']), 
              $faker->company, 
              $faker->bothify('Model-###??'), 
              $faker->date(), 
