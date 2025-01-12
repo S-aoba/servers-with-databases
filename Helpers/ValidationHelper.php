@@ -23,7 +23,8 @@ class ValidationHelper
 
         // If provided value extis in availableTypeList, Keep the original $type value.
         // If provided value does not extis in availableTypeList, Set to false.
-        $type = in_array(strtolower($type), $availableTypeList, true) ? $type : false;
+        $type = strtolower($type);
+        $type = in_array($type, $availableTypeList, true) ? $type : false;
         if($type === false) throw new \InvalidArgumentException("The provided value is not a valid type.");
 
         return $type;
