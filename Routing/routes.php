@@ -38,14 +38,14 @@ return [
 
         $parts = DatabaseHelper::getComputerPartByType($type, $page, $perpage);
 
-        return new HTMLRenderer('component/partsByType', ['parts'=>$parts]);
+        return new HTMLRenderer('component/parts-by-type', ['parts'=>$parts]);
     },
 
     'random/computer' => function(): HTTPRenderer {
         // URL 例：/random/computer
         $computer = DatabaseHelper::getRandomComputer();
 
-        return new HTMLRenderer('component/randomComputer', ['computer' => $computer]);
+        return new HTMLRenderer('component/random-computer', ['computer' => $computer]);
     },
 
     'parts/newest' => function() : HTTPRenderer {
