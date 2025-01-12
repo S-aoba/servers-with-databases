@@ -15,4 +15,17 @@ class ValidationHelper
         // 値がすべてのチェックをパスしたら、そのまま返します。
         return $value;
     }
+
+    public static function type(?string $type): string {
+        if($type === null) throw new \InvalidArgumentException("The provided value is null.");
+
+        $availableTypeList = ['cpu', 'gpu', 'motherboard', 'power', 'memory', 'ssd', 'hd'];
+
+        // If provided value extis in availableTypeList, Keep the original $type value.
+        // If provided value does not extis in availableTypeList, Set to false.
+        $type = in_array(strtolower($type), $availableTypeList, true) ? $type : false;
+        if($type === false) throw new \InvalidArgumentException("The provided value is not a valid type.");
+
+        return $type;
+    }
 }
