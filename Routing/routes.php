@@ -23,9 +23,21 @@ return [
         $part = DatabaseHelper::getRandomComputerPart();
         return new JSONRenderer(['part'=>$part]);
     },
-    'api/parts'=>function(){
+    'api/parts'=>function(): JSONRenderer{
         $id = ValidationHelper::integer($_GET['id']??null);
         $part = DatabaseHelper::getComputerPartById($id);
         return new JSONRenderer(['part'=>$part]);
     },
+
+    // 課題: クライアントサーバでのレンダリング(6)
+    'types' => function(): HTTPRenderer {
+        // types, page, perpage, url = /types?type=CPU&page=2&perpage=10
+        $type = ValidationHelper::type($_GET['type'] ?? null);
+        $page = ValidationHelper::integer($_GET['page'] ?? 1);
+        $perpage = ValidationHelper::integer($_GET['perpage'] ?? 10);
+
+        $parts = DatabaseHelper::getComputerPartByType($type, $page, $perpage);
+
+        return new HTMLRenderer('component/partsByType', ['parts'=>$parts]);
+    }
 ];
