@@ -39,5 +39,12 @@ return [
         $parts = DatabaseHelper::getComputerPartByType($type, $page, $perpage);
 
         return new HTMLRenderer('component/partsByType', ['parts'=>$parts]);
+    },
+
+    'random/computer' => function(): HTTPRenderer {
+        // URL 例：/random/computer
+        $computer = DatabaseHelper::getRandomComputer();
+
+        return new HTMLRenderer('component/randomComputer', ['computer' => $computer]);
     }
 ];

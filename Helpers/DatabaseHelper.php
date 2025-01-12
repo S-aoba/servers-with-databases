@@ -56,5 +56,27 @@ class DatabaseHelper
         if (!$parts) return [];
     
         return $parts;
-    }    
+    }
+    
+    public static function getRandomComputer(): array {
+        $db = new MySQLWrapper();
+    
+        $types = ['cpu', 'gpu', 'motherboard', 'power', 'memory', 'ssd', 'hd'];
+        $randomComputer = [];
+        // DBからType別に一つずつ取得する
+        foreach($types as $type) {
+            $stmt = $db->prepare("SELECT * FROM computer_parts WHERE type = ? ORDER BY RAND() LIMIT 1");
+            $stmt->bind_param('s', $type);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+
+            if($row === false) throw new Exception("Could not find {$type}");
+
+            $randomComputer[$type] = $row;
+        }
+
+        return $randomComputer;
+    }
 }
