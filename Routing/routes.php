@@ -46,5 +46,15 @@ return [
         $computer = DatabaseHelper::getRandomComputer();
 
         return new HTMLRenderer('component/randomComputer', ['computer' => $computer]);
+    },
+
+    'parts/newest' => function() : HTTPRenderer {
+        // page, perpage, url = /parts/newest?page=2&perpage=10
+        $page = ValidationHelper::integer($_GET['page'] ?? 1);
+        $perpage = ValidationHelper::integer($_GET['perpage'] ?? 10);
+
+        $parts = DatabaseHelper::getNewestComputerParts($page, $perpage);
+
+        return new HTMLRenderer('component/newest-computer-parts',['parts' => $parts]);
     }
 ];
