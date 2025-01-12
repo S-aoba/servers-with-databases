@@ -56,5 +56,15 @@ return [
         $parts = DatabaseHelper::getNewestComputerParts($page, $perpage);
 
         return new HTMLRenderer('component/newest-computer-parts',['parts' => $parts]);
+    },
+
+    'parts/performance' => function(): HTTPRenderer {
+        // order, type,  url = /parts/performance?order=desc&type=CPU
+        $type = ValidationHelper::type($_GET['type'] ?? null);
+        $order = ValidationHelper::order($_GET['order'] ?? 'ASC');
+
+        $parts = DatabaseHelper::getTopAndBottom50ComputerParts($order, $type);
+
+        return new HTMLRenderer('component/performance-parts', ['parts' => $parts]);
     }
 ];

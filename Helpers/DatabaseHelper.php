@@ -102,4 +102,47 @@ class DatabaseHelper
     
         return $parts;
     }
-}
+
+    public static function getTopAndBottom50ComputerParts(string $order, string $type): array {
+        $output = [];
+
+        $db = new MySQLWrapper();
+
+        $stmtTop = $db->prepare("SELECT * FROM computer_parts WHERE type = ? ORDER BY performance_score DESC LIMIT 50");
+        $stmtTop->bind_param('s', $type);
+        $stmtTop->execute();
+
+        $result = $stmtTop->get_result();
+        $topParts = $result->fetch_all(MYSQLI_ASSOC); // 複数行を取得
+    
+        // データがない場合は空配列を返す
+        $output['top'] = $topParts;
+    
+        $stmtBottom = $db->prepare("SELECT * FROM computer_parts WHERE type = ? ORDER BY performance_score ASC LIMIT 50");
+        $stmtBottom->bind_param('s', $type);
+        $stmtBottom->execute();
+
+        $result = $stmtBottom->get_result();
+        $bottomParts = $result->fetch_all(MYSQLI_ASSOC); // 複数行を取得
+
+        $output['bottom'] = $bottomParts;
+
+        usort($output['top'], function ($a, $b) use ($order) {
+            if ($order === 'ASC') {
+                return $a['performance_score'] <=> $b['performance_score'];
+            } else {
+                return $b['performance_score'] <=> $a['performance_score'];
+            }
+        });
+
+        usort($output['bottom'], function ($a, $b) use ($order) {
+            if ($order === 'ASC') {
+                return $a['performance_score'] <=> $b['performance_score'];
+            } else {
+                return $b['performance_score'] <=> $a['performance_score'];
+            }
+        });
+
+        return $output;
+    }
+ }

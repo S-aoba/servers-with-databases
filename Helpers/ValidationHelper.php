@@ -29,4 +29,14 @@ class ValidationHelper
 
         return $type;
     }
+
+    public static function order(string $order): string {
+
+        $order = strtoupper($order);
+        $orderList = ['ASC', 'DESC'];
+        $order = in_array($order, $orderList, true) ? $order : false;
+        if($order === false) throw new \InvalidArgumentException('The provided value is not a valid order.');
+
+        return $order;
+    }
 }
