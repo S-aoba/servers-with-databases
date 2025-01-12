@@ -1,4 +1,4 @@
-<div class="d-flex">
+<div class="row">
   <?php foreach($parts as $part): ?>
     <div class="card col-md-4" style="width: 18rem;">
       <div class="card-body">
