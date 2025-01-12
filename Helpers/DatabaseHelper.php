@@ -34,4 +34,27 @@ class DatabaseHelper
 
         return $part;
     }
+
+    public static function getComputerPartByType(string $type, int $page, int $perpage): array {
+        $db = new MySQLWrapper();
+    
+        // OFFSET を計算
+        $offset = ($page - 1) * $perpage;
+    
+        // SQL 準備
+        $stmt = $db->prepare("SELECT * FROM computer_parts WHERE type = ? ORDER BY id ASC LIMIT ? OFFSET ?");
+        $stmt->bind_param('sii', $type, $perpage, $offset);
+    
+        // 実行
+        $stmt->execute();
+    
+        // 結果を取得
+        $result = $stmt->get_result();
+        $parts = $result->fetch_all(MYSQLI_ASSOC); // 複数行を取得
+    
+        // データがない場合は空配列を返す
+        if (!$parts) return [];
+    
+        return $parts;
+    }    
 }
