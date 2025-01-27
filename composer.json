@@ -10,7 +10,7 @@
             "Database\\Migrations\\": "Database/Migrations/",
             "Database\\Seeds\\": "Database/Seeds/",
             "Database\\DataAccess\\": "Database/DataAccess/",
-            "Database\\DataAccess\\Interfaces": "Database/DataAccess/Interfaces",
+            "Database\\DataAccess\\Interfaces\\": "Database/DataAccess/Interfaces/",
             "Models\\": "Models/",
             "Models\\Interfaces\\": "Models/Interfaces/",
             "Models\\Traits\\": "Models/Traits/"
