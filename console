@@ -1,13 +1,18 @@
+#!/usr/bin/env php
 <?php
-
-require_once 'vendor/autoload.php';
+spl_autoload_extensions(".php");
+spl_autoload_register(function($class) {
+    $file = __DIR__ . '/'  . str_replace('\\', '/', $class). '.php';
+    if (file_exists(stream_resolve_include_path($file))) include($file);
+});
+require 'vendor/autoload.php';
 
 $commands = include "Commands/registry.php";
 
-// 第2引数は実行するコマンド
+// 第2引数は実行するコマンドです。
 $inputCommand = $argv[1];
 
-// PHPでそれらをインスタンス化できるすべてのコマンドクラス名を通過します。
+// PHPでインスタンス化できるコマンドのクラス名をすべて調べます。
 foreach ($commands as $commandClass) {
     $alias = $commandClass::getAlias();
 
