@@ -9,6 +9,9 @@ use Response\Render\JSONRenderer;
 use Types\ValueType;
 
 return [
+    'register'=>function(): HTTPRenderer{
+        return new HTMLRenderer('page/register');
+    },
     'random/part'=>function(): HTTPRenderer{
         $partDao = DAOFactory::getComputerPartDAO();
         $part = $partDao->getRandom();
