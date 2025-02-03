@@ -9,6 +9,8 @@ spl_autoload_register(function($class) {
     if (file_exists(stream_resolve_include_path($file))) include($file);
 });
 
+require 'vendor/autoload.php';
+
 $DEBUG = true;
 
 if (preg_match('/\.(?:png|jpg|jpeg|gif|js|css|html)$/', $_SERVER["REQUEST_URI"])) {

@@ -26,9 +26,9 @@ class Seed extends AbstractCommand
         $directoryPath = __DIR__ . '/../../Database/Seeds';
 
         // ディレクトリをスキャンしてすべてのファイルを取得します。
-        $files = scandir($directoryPath);
-        // $files = ['CarsSeeder.php', 'CarPartsSeeder.php', 'ComputerPartsSeeder.php'];
-        $files = ['CharacterSeeder.php'];
+        // $files = scandir($directoryPath);
+        $files = ['CarsSeeder.php', 'CarPartsSeeder.php', 'ComputerPartsSeeder.php', 'CharacterSeeder.php'];
+        // $files = ['CharacterSeeder.php'];
 
         foreach ($files as $file) {
             if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
