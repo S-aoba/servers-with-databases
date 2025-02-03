@@ -5,7 +5,11 @@ use Models\ComputerPart;
 use Response\HTTPRenderer;
 use Response\Render\HTMLRenderer;
 use Database\DataAccess\DAOFactory;
+use Helpers\Authenticate;
+use Models\User;
+use Response\FlashData;
 use Response\Render\JSONRenderer;
+use Response\Render\RedirectRenderer;
 use Types\ValueType;
 
 return [

@@ -2,6 +2,8 @@
 
 namespace Helpers;
 
+use Types\ValueType;
+
 class ValidationHelper
 {
     public static function integer($value, float $min = -INF, float $max = INF): int
