@@ -1,3 +1,4 @@
 .env
 /Database/Backup
 vendor
+logs
