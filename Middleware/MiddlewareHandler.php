@@ -14,7 +14,6 @@ class MiddlewareHandler
         $middlewares = array_reverse($this->middlewares);
 
         foreach ($middlewares as $middleware){
-            $middleware = new $middleware();
             $action = fn() => $middleware->handle($action);
         }
 

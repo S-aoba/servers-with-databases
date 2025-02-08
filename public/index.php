@@ -27,8 +27,7 @@ if (isset($routes[$path])) {
     // 現在のルートを取得します
     $middlewareRegister = include('Middleware/middleware-register.php');
     $middlewares = $middlewareRegister['global'];
-    $middlewareHandler = new \Middleware\MiddlewareHandler($middlewares);
-
+    $middlewareHandler = new \Middleware\MiddlewareHandler(array_map(fn($middlewareClass) => new $middlewareClass(), $middlewares));
     // チェーンの最後のcallableは、HTTPRendererを返す現在の$route callableとなります
     $renderer = $middlewareHandler->run($routes[$path]);
 
