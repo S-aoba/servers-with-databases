@@ -136,17 +136,22 @@ return [
         return new HTMLRenderer('component/computer-part-card', ['part'=>$part]);
     }),
     'update/part' => Route::create('update/part', function (): HTTPRenderer {
+        $user = Authenticate::getAuthenticatedUser();
         $part = null;
         $partDao = DAOFactory::getComputerPartDAO();
         if(isset($_GET['id'])){
             $id = ValidationHelper::integer($_GET['id']);
             $part = $partDao->getById($id);
+            if($user->getId() !== $part->getSubmittedById()){
+                FlashData::setFlashData('error', 'Only the author can edit this computer part.');
+                return new RedirectRenderer('register');
+            }
         }
         return new HTMLRenderer('component/update-computer-part',['part'=>$part]);
     })->setMiddleware(['auth']),
     'form/update/part' => Route::create('form/update/part', function (): HTTPRenderer {
         try {
-            // リクエストメソッドがPOSTかどうかをチェックします
+            // クエストメソッドがPOSTかどうかをチェックします
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 throw new Exception('Invalid request method!');
             }
@@ -170,18 +175,28 @@ return [
 
             $partDao = DAOFactory::getComputerPartDAO();
 
-            // 入力に対する単純な検証。実際のシナリオでは、要件を満たす完全なバリデーションが必要になることがあります。
+            // 入力に対する単純な認証。実際のシナリオでは、要件を満たす完全な認証が必要になることがあります
             $validatedData = ValidationHelper::validateFields($required_fields, $_POST);
 
-            if(isset($_POST['id'])) $validatedData['id'] = ValidationHelper::integer($_POST['id']);
+            $user = Authenticate::getAuthenticatedUser();
 
-            // 名前付き引数を持つ新しいComputerPartオブジェクトの作成＋スプレット構文による入力
+            // idが設定されている場合は、認証を行います
+            if(isset($_POST['id'])){
+                $validatedData['id'] = ValidationHelper::integer($_POST['id']);
+                $currentPart = $partDao->getById($_POST['id']);
+                if($currentPart === null || $user->getId() !== $currentPart->getSubmittedById()){
+                    return new JSONRenderer(['status' => 'error', 'message' => 'Invalid Data Permissions!']);
+                }
+            }
+
+            $validatedData['submitted_by_id'] = $user->getId();
+
             $part = new ComputerPart(...$validatedData);
 
             error_log(json_encode($part->toArray(), JSON_PRETTY_PRINT));
 
-            // 新しい部品情報でデータベースの更新を試みます
-            // 別の方法として、createOrUpdateを実行することもできます
+            // 新しい部品情報でデータベースの更新を試みます。
+            // 別の方法として、createOrUpdateを実行することもできます。
             if(isset($validatedData['id'])) $success = $partDao->update($part);
             else $success = $partDao->create($part);
 
@@ -189,9 +204,9 @@ return [
                 throw new Exception('Database update failed!');
             }
 
-            return new JSONRenderer(['status' => 'success', 'message' => 'Part updated successfully']);
+            return new JSONRenderer(['status' => 'success', 'message' => 'Part updated successfully', 'id'=>$part->getId()]);
         } catch (\InvalidArgumentException $e) {
-            error_log($e->getMessage());// エラーログは PHP のログや stdout から見ることができます。
+            error_log($e->getMessage());
             return new JSONRenderer(['status' => 'error', 'message' => 'Invalid data.']);
         } catch (Exception $e) {
             error_log($e->getMessage());
