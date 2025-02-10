@@ -1,33 +1,59 @@
 <?php
 
+use Exceptions\AuthenticationFailureException;
 use Helpers\ValidationHelper;
+use Helpers\Authenticate;
 use Models\ComputerPart;
+use Response\FlashData;
 use Response\HTTPRenderer;
 use Response\Render\HTMLRenderer;
-use Database\DataAccess\DAOFactory;
-use Helpers\Authenticate;
-use Models\User;
-use Response\FlashData;
-use Response\Render\JSONRenderer;
 use Response\Render\RedirectRenderer;
+use Database\DataAccess\DAOFactory;
+use Response\Render\JSONRenderer;
+use Routing\Route;
 use Types\ValueType;
+use Models\User;
 
 return [
-    'register'=>function(): HTTPRenderer{
-        if(Authenticate::isLoggedIn()){
-            FlashData::setFlashData('error', 'Cannot register as you are already logged in.');
-            return new RedirectRenderer('random/part');
-        }
+    'login' => Route::create('login', function (): HTTPRenderer {
+        return new HTMLRenderer('page/login');
+    })->setMiddleware(['guest']),
+    'form/login' => Route::create('form/login', function (): HTTPRenderer {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid request method!');
 
+            $required_fields = [
+                'email' => ValueType::EMAIL,
+                'password' => ValueType::STRING,
+            ];
+
+            $validatedData = ValidationHelper::validateFields($required_fields, $_POST);
+
+            Authenticate::authenticate($validatedData['email'], $validatedData['password']);
+
+            FlashData::setFlashData('success', 'Logged in successfully.');
+            return new RedirectRenderer('update/part');
+        } catch (AuthenticationFailureException $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'Failed to login, wrong email and/or password.');
+            return new RedirectRenderer('login');
+        } catch (\InvalidArgumentException $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'Invalid Data.');
+            return new RedirectRenderer('login');
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'An error occurred.');
+            return new RedirectRenderer('login');
+        }
+    })->setMiddleware(['guest']),
+    'register' => Route::create('register', function (): HTTPRenderer {
         return new HTMLRenderer('page/register');
-    },
-    'form/register' => function(): HTTPRenderer {
-        // ユーザが現在ログインしている場合、登録ページにアクセスすることはできません。
-        if(Authenticate::isLoggedIn()){
-            FlashData::setFlashData('error', 'Cannot register as you are already logged in.');
-            return new RedirectRenderer('random/part');
-        }
-
+    })->setMiddleware(['guest']),
+    'form/register' => Route::create('form/register', function (): HTTPRenderer {
         try {
             // リクエストメソッドがPOSTかどうかをチェックします
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid request method!');
@@ -84,71 +110,21 @@ return [
             FlashData::setFlashData('error', 'An error occurred.');
             return new RedirectRenderer('register');
         }
-    },
-    'logout'=>function(): HTTPRenderer{
-        if(!Authenticate::isLoggedIn()){
-            FlashData::setFlashData('error', 'Already logged out.');
-            return new RedirectRenderer('random/part');
-        }
-
+    })->setMiddleware(['guest']),
+    'logout' => Route::create('logout', function (): HTTPRenderer {
         Authenticate::logoutUser();
         FlashData::setFlashData('success', 'Logged out.');
         return new RedirectRenderer('random/part');
-    },
-    'login'=>function(): HTTPRenderer{
-        if(Authenticate::isLoggedIn()){
-            FlashData::setFlashData('error', 'You are already logged in.');
-            return new RedirectRenderer('random/part');
-        }
-
-        return new HTMLRenderer('page/login');
-    },
-    'form/login'=>function(): HTTPRenderer{
-        if(Authenticate::isLoggedIn()){
-            FlashData::setFlashData('error', 'You are already logged in.');
-            return new RedirectRenderer('random/part');
-        }
-
-        try {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid request method!');
-
-            $required_fields = [
-                'email' => ValueType::EMAIL,
-                'password' => ValueType::STRING,
-            ];
-
-            $validatedData = ValidationHelper::validateFields($required_fields, $_POST);
-
-            Authenticate::authenticate($validatedData['email'], $validatedData['password']);
-
-            FlashData::setFlashData('success', 'Logged in successfully.');
-            return new RedirectRenderer('update/part');
-        } catch (AuthenticationFailureException $e) {
-            error_log($e->getMessage());
-
-            FlashData::setFlashData('error', 'Failed to login, wrong email and/or password.');
-            return new RedirectRenderer('login');
-        } catch (\InvalidArgumentException $e) {
-            error_log($e->getMessage());
-
-            FlashData::setFlashData('error', 'Invalid Data.');
-            return new RedirectRenderer('login');
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-
-            FlashData::setFlashData('error', 'An error occurred.');
-            return new RedirectRenderer('login');
-        }
-    },
-    'random/part'=>function(): HTTPRenderer{
+    })->setMiddleware(['auth']),
+    'random/part' => Route::create('random/part', function (): HTTPRenderer {
         $partDao = DAOFactory::getComputerPartDAO();
         $part = $partDao->getRandom();
 
         if($part === null) throw new Exception('No parts are available!');
 
         return new HTMLRenderer('component/computer-part-card', ['part'=>$part]);
-    },
-    'parts'=>function(): HTTPRenderer{
+    }),
+    'parts' => Route::create('parts', function (): HTTPRenderer {
         // IDの検証
         $id = ValidationHelper::integer($_GET['id']??null);
 
@@ -158,8 +134,8 @@ return [
         if($part === null) throw new Exception('Specified part was not found!');
 
         return new HTMLRenderer('component/computer-part-card', ['part'=>$part]);
-    },
-    'update/part' => function(): HTMLRenderer {
+    }),
+    'update/part' => Route::create('update/part', function (): HTTPRenderer {
         $part = null;
         $partDao = DAOFactory::getComputerPartDAO();
         if(isset($_GET['id'])){
@@ -167,8 +143,8 @@ return [
             $part = $partDao->getById($id);
         }
         return new HTMLRenderer('component/update-computer-part',['part'=>$part]);
-    },
-    'form/update/part' => function(): HTTPRenderer {
+    })->setMiddleware(['auth']),
+    'form/update/part' => Route::create('form/update/part', function (): HTTPRenderer {
         try {
             // リクエストメソッドがPOSTかどうかをチェックします
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -194,18 +170,18 @@ return [
 
             $partDao = DAOFactory::getComputerPartDAO();
 
-            // 入力に対する単純な認証です。実際のシナリオでは、要件を満たす完全な認証が必要になることがあります。
+            // 入力に対する単純な検証。実際のシナリオでは、要件を満たす完全なバリデーションが必要になることがあります。
             $validatedData = ValidationHelper::validateFields($required_fields, $_POST);
 
             if(isset($_POST['id'])) $validatedData['id'] = ValidationHelper::integer($_POST['id']);
 
-            // 名前付き引数を持つ新しいComputerPartオブジェクトの作成＋スプレッド演算子を用いて、配列の要素を別々の変数や関数の引数として展開
+            // 名前付き引数を持つ新しいComputerPartオブジェクトの作成＋スプレット構文による入力
             $part = new ComputerPart(...$validatedData);
 
             error_log(json_encode($part->toArray(), JSON_PRETTY_PRINT));
 
-            // 新しい部品情報でデータベースの更新を試みます。
-            // 別の方法として、createOrUpdateを実行することもできます。
+            // 新しい部品情報でデータベースの更新を試みます
+            // 別の方法として、createOrUpdateを実行することもできます
             if(isset($validatedData['id'])) $success = $partDao->update($part);
             else $success = $partDao->create($part);
 
@@ -215,14 +191,13 @@ return [
 
             return new JSONRenderer(['status' => 'success', 'message' => 'Part updated successfully']);
         } catch (\InvalidArgumentException $e) {
-            // エラーログはPHPのログやstdoutから見ることができます。
-            error_log($e->getMessage());
+            error_log($e->getMessage());// エラーログは PHP のログや stdout から見ることができます。
             return new JSONRenderer(['status' => 'error', 'message' => 'Invalid data.']);
         } catch (Exception $e) {
             error_log($e->getMessage());
             return new JSONRenderer(['status' => 'error', 'message' => 'An error occurred.']);
         }
-    },
+    })->setMiddleware(['auth']),
 
     // 課題: クライアントサーバでのレンダリング(6)
     'types' => function(): HTTPRenderer {
