@@ -74,8 +74,8 @@ class ComputerPartDAOImpl implements ComputerPartDAO
 
         $query =
         <<<SQL
-            INSERT INTO computer_parts (id, name, type, brand, model_number, release_date, description, performance_score, market_price, rsm, power_consumptionw, lengthm, widthm, heightm, lifespan)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO computer_parts (id, name, type, brand, model_number, release_date, description, performance_score, market_price, rsm, power_consumptionw, lengthm, widthm, heightm, lifespan, submitted_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE id = ?,
             name = VALUES(name),
             type = VALUES(type),
@@ -95,7 +95,7 @@ class ComputerPartDAOImpl implements ComputerPartDAO
 
         $result = $mysqli->prepareAndExecute(
             $query,
-            'issssssidddddddi',
+            'issssssidddddddii',
             [
                 $partData->getId(), // on null ID, mysql will use auto-increment.
                 $partData->getName(),
@@ -112,6 +112,7 @@ class ComputerPartDAOImpl implements ComputerPartDAO
                 $partData->getWidthM(),
                 $partData->getHeightM(),
                 $partData->getLifespan(),
+                $partData->getSubmittedById(),
                 $partData->getId()
             ],
         );
@@ -145,7 +146,8 @@ class ComputerPartDAOImpl implements ComputerPartDAO
             widthM: $data['widthm'],
             heightM: $data['heightm'],
             lifespan: $data['lifespan'],
-            timeStamp: new DataTimeStamp($data['created_at'], $data['updated_at'])
+            timeStamp: new DataTimeStamp($data['created_at'], $data['updated_at']),
+            submitted_by_id: $data['submitted_by'],
         );
     }
 
