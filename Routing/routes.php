@@ -228,10 +228,14 @@ return [
     'test/share/files/jpg/generate-url'=> Route::create('test/share/files/jpg/generate-url', function(): HTTPRenderer{
         $required_fields = [
             'user' => ValueType::STRING,
-            'filename' => ValueType::STRING, // 本番環境では、有効なファイルパスに対してバリデーションを行いますが、ファイルパスの単純な文字列チェックを行います。
+            'filename' => ValueType::STRING,
         ];
 
         $validatedData = ValidationHelper::validateFields($required_fields, $_GET);
+
+        if(isset($_GET['lasts'])){
+            $validatedData['expiration'] = time() + ValidationHelper::integer($_GET['lasts']);
+        }
 
         return new JSONRenderer(['url'=>Route::create('test/share/files/jpg', function(){})->getSignedURL($validatedData)]);
     }),
