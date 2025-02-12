@@ -13,6 +13,7 @@ use Response\Render\JSONRenderer;
 use Routing\Route;
 use Types\ValueType;
 use Models\User;
+use Response\Render\MediaRenderer;
 
 return [
     'login' => Route::create('login', function (): HTTPRenderer {
@@ -213,6 +214,27 @@ return [
             return new JSONRenderer(['status' => 'error', 'message' => 'An error occurred.']);
         }
     })->setMiddleware(['auth']),
+    'test/share/files/jpg'=> Route::create('test/share/files/jpg', function(): HTTPRenderer{
+        // このURLは署名を必要とするため、URLが正しい署名を持つ場合にのみ、この最終ルートコードに到達します。
+        $required_fields = [
+            'user' => ValueType::STRING,
+            'filename' => ValueType::STRING, // 本番環境では、有効なファイルパスに対してバリデーションを行いますが、ファイルパスの単純な文字列チェックを行います。
+        ];
+
+        $validatedData = ValidationHelper::validateFields($required_fields, $_GET);
+
+        return new MediaRenderer(sprintf("private/shared/%s/%s", $validatedData['user'],$validatedData['filename']), 'jpg');
+    })->setMiddleware(['signature']),
+    'test/share/files/jpg/generate-url'=> Route::create('test/share/files/jpg/generate-url', function(): HTTPRenderer{
+        $required_fields = [
+            'user' => ValueType::STRING,
+            'filename' => ValueType::STRING, // 本番環境では、有効なファイルパスに対してバリデーションを行いますが、ファイルパスの単純な文字列チェックを行います。
+        ];
+
+        $validatedData = ValidationHelper::validateFields($required_fields, $_GET);
+
+        return new JSONRenderer(['url'=>Route::create('test/share/files/jpg', function(){})->getSignedURL($validatedData)]);
+    }),
 
     // 課題: クライアントサーバでのレンダリング(6)
     'types' => function(): HTTPRenderer {
